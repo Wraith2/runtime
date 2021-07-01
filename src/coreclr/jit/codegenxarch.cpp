@@ -702,8 +702,8 @@ void CodeGen::genCodeForLongUMod(GenTreeOp* node)
     GenTree* const divisor = node->gtOp2;
     assert(divisor->gtSkipReloadOrCopy()->OperGet() == GT_CNS_INT);
     assert(divisor->gtSkipReloadOrCopy()->isUsedFromReg());
-    assert(divisor->gtSkipReloadOrCopy()->AsIntCon()->gtIconVal >= 2);
-    assert(divisor->gtSkipReloadOrCopy()->AsIntCon()->gtIconVal <= 0x3fffffff);
+    assert(divisor->gtSkipReloadOrCopy()->AsIntCon()->IconValue() >= 2);
+    assert(divisor->gtSkipReloadOrCopy()->AsIntCon()->IconValue() <= 0x3fffffff);
 
     // dividendLo must be in RAX; dividendHi must be in RDX
     genCopyRegIfNeeded(dividendLo, REG_EAX);
@@ -2343,7 +2343,7 @@ void CodeGen::genLclHeap(GenTree* tree)
         assert(size->isContained());
 
         // If amount is zero then return null in targetReg
-        amount = size->AsIntCon()->gtIconVal;
+        amount = size->AsIntCon()->IconValue();
         if (amount == 0)
         {
             instGen_Set_Reg_To_Zero(EA_PTRSIZE, targetReg);
@@ -4686,7 +4686,7 @@ void CodeGen::genCodeForIndir(GenTreeIndir* tree)
     {
         noway_assert(EA_ATTR(genTypeSize(targetType)) == EA_PTRSIZE);
         emit->emitIns_R_C(ins_Load(TYP_I_IMPL), EA_PTRSIZE, tree->GetRegNum(), FLD_GLOBAL_FS,
-                          (int)addr->AsIntCon()->gtIconVal);
+                          (int)addr->AsIntCon()->IconValue());
     }
     else
     {
@@ -7520,11 +7520,11 @@ void CodeGen::genPutArgStkFieldList(GenTreePutArgStk* putArgStk)
                         case GT_CNS_INT:
                             if (fieldNode->IsIconHandle())
                             {
-                                inst_IV_handle(INS_push, fieldNode->AsIntCon()->gtIconVal);
+                                inst_IV_handle(INS_push, fieldNode->AsIntCon()->IconValue());
                             }
                             else
                             {
-                                inst_IV(INS_push, fieldNode->AsIntCon()->gtIconVal);
+                                inst_IV(INS_push, fieldNode->AsIntCon()->IconValue());
                             }
                             break;
                         default:
@@ -7619,11 +7619,11 @@ void CodeGen::genPutArgStk(GenTreePutArgStk* putArgStk)
     {
         if (data->IsIconHandle())
         {
-            inst_IV_handle(INS_push, data->AsIntCon()->gtIconVal);
+            inst_IV_handle(INS_push, data->AsIntCon()->IconValue());
         }
         else
         {
-            inst_IV(INS_push, data->AsIntCon()->gtIconVal);
+            inst_IV(INS_push, data->AsIntCon()->IconValue());
         }
         AddStackLevel(argSize);
     }

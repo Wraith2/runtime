@@ -382,7 +382,7 @@ void Compiler::fgDumpTree(FILE* fgxFile, GenTree* const tree)
     }
     else if (tree->IsCnsIntOrI())
     {
-        fprintf(fgxFile, "%d", tree->AsIntCon()->gtIconVal);
+        fprintf(fgxFile, "%d", tree->AsIntCon()->IconValue());
     }
     else if (tree->IsCnsFltOrDbl())
     {
@@ -2887,7 +2887,7 @@ void Compiler::fgDebugCheckFlags(GenTree* tree)
                 else
                 {
                     noway_assert((op1->gtOper == GT_CNS_INT) &&
-                                 ((op1->AsIntCon()->gtIconVal == 0) || (op1->AsIntCon()->gtIconVal == 1)));
+                                 ((op1->AsIntCon()->IconValue() == 0) || (op1->AsIntCon()->IconValue() == 1)));
                 }
                 break;
 

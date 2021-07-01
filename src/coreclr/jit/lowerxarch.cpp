@@ -49,7 +49,7 @@ void Lowering::LowerStoreLoc(GenTreeLclVarCommon* storeLoc)
     if ((storeLoc->gtOper == GT_STORE_LCL_VAR) && (storeLoc->gtOp1->gtOper == GT_CNS_INT))
     {
         GenTreeIntCon* con  = storeLoc->gtOp1->AsIntCon();
-        ssize_t        ival = con->gtIconVal;
+        ssize_t        ival = con->IconValue();
 
         unsigned   varNum = storeLoc->GetLclNum();
         LclVarDsc* varDsc = comp->lvaTable + varNum;

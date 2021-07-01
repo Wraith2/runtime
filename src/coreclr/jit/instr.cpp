@@ -682,9 +682,9 @@ AGAIN:
             assert(offs == 0);
             assert(!shfv);
             if (tree->IsIconHandle())
-                inst_IV_handle(ins, tree->AsIntCon()->gtIconVal);
+                inst_IV_handle(ins, tree->AsIntCon()->IconValue());
             else
-                inst_IV(ins, tree->AsIntCon()->gtIconVal);
+                inst_IV(ins, tree->AsIntCon()->IconValue());
             break;
 #endif
 
@@ -880,8 +880,8 @@ AGAIN:
 
             assert(offs == 0);
 
-            // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntCon::gtIconVal had target_ssize_t type.
-            inst_RV_IV(ins, reg, (target_ssize_t)tree->AsIntCon()->gtIconVal, emitActualTypeSize(tree->TypeGet()),
+            // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntCon::IconValue() had target_ssize_t type.
+            inst_RV_IV(ins, reg, (target_ssize_t)tree->AsIntCon()->IconValue(), emitActualTypeSize(tree->TypeGet()),
                        flags);
             break;
 

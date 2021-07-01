@@ -2184,7 +2184,7 @@ GenTree* Lowering::LowerTailCallViaJitHelper(GenTreeCall* call, GenTree* callTar
 
     ssize_t tailCallHelperFlags = 1 |                                  // always restore EDI,ESI,EBX
                                   (call->IsVirtualStub() ? 0x2 : 0x0); // Stub dispatch flag
-    arg1->AsIntCon()->gtIconVal = tailCallHelperFlags;
+    arg1->AsIntCon()->SetIconValue(tailCallHelperFlags);
 
     // arg 2 == numberOfNewStackArgsWords
     argEntry = comp->gtArgEntryByArgNum(call, numArgs - 3);
@@ -2192,7 +2192,7 @@ GenTree* Lowering::LowerTailCallViaJitHelper(GenTreeCall* call, GenTree* callTar
     GenTree* arg2 = argEntry->GetNode()->AsPutArgStk()->gtGetOp1();
     assert(arg2->gtOper == GT_CNS_INT);
 
-    arg2->AsIntCon()->gtIconVal = nNewStkArgsWords;
+    arg2->AsIntCon()->SetIconValue(nNewStkArgsWords);
 
 #ifdef DEBUG
     // arg 3 == numberOfOldStackArgsWords

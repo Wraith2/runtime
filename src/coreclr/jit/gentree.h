@@ -3155,6 +3155,7 @@ struct GenTreeIntCon : public GenTreeIntConCommon
         , gtCompileTimeHandle(0)
         , gtFieldSeq(FieldSeqStore::NotAField())
     {
+        assert(FitsIn<INT32>(value));
     }
 
     GenTreeIntCon(var_types type, ssize_t value, FieldSeqNode* fields DEBUGARG(bool largeNode = false))
@@ -3163,6 +3164,7 @@ struct GenTreeIntCon : public GenTreeIntConCommon
         , gtCompileTimeHandle(0)
         , gtFieldSeq(fields)
     {
+        assert(FitsIn<INT32>(value));
         assert(fields != nullptr);
     }
 
@@ -3242,12 +3244,14 @@ inline void GenTreeIntConCommon::SetLngValue(INT64 val)
 inline ssize_t GenTreeIntConCommon::IconValue() const
 {
     assert(gtOper == GT_CNS_INT); //  We should never see a GT_CNS_LNG for a 64-bit target!
+    assert(FitsIn<INT32>(AsIntCon()->gtIconVal));
     return AsIntCon()->gtIconVal;
 }
 
 inline void GenTreeIntConCommon::SetIconValue(ssize_t val)
 {
     assert(gtOper == GT_CNS_INT); //  We should never see a GT_CNS_LNG for a 64-bit target!
+    assert(FitsIn<INT32>(val));
     AsIntCon()->gtIconVal = val;
 }
 

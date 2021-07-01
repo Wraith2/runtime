@@ -793,7 +793,7 @@ Compiler::fgWalkResult Compiler::fgLateDevirtualization(GenTree** pTree, fgWalkD
             BasicBlock* bTaken    = nullptr;
             BasicBlock* bNotTaken = nullptr;
 
-            if (condTree->AsIntCon()->gtIconVal != 0)
+            if (condTree->AsIntCon()->IconValue() != 0)
             {
                 block->bbJumpKind = BBJ_ALWAYS;
                 bTaken            = block->bbJumpDest;

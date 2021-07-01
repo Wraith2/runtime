@@ -809,7 +809,7 @@ OPTIMIZECAST:
                         else
                         {
                             commaOp2->ChangeOperConst(GT_CNS_INT);
-                            commaOp2->AsIntCon()->gtIconVal = 0;
+                            commaOp2->AsIntCon()->SetIconValue(0);
                             /* Change the types of oper and commaOp2 to TYP_INT */
                             oper->gtType = commaOp2->gtType = TYP_INT;
                         }
@@ -5857,7 +5857,7 @@ GenTree* Compiler::fgMorphArrayIndex(GenTree* tree)
 
     FieldSeqNode* firstElemFseq = GetFieldSeqStore()->CreateSingleton(FieldSeqStore::FirstElemPseudoField);
 
-    if ((cnsOff != nullptr) && (cnsOff->AsIntCon()->gtIconVal == elemOffs))
+    if ((cnsOff != nullptr) && (cnsOff->AsIntCon()->IconValue() == elemOffs))
     {
         // Assign it the [#FirstElem] field sequence
         //
@@ -10969,7 +10969,7 @@ GenTree* Compiler::fgMorphCommutative(GenTreeOp* tree)
         return nullptr;
     }
 
-    cns1->gtIconVal = foldedCns->AsIntCon()->IconValue();
+    cns1->SetIconValue(foldedCns->AsIntCon()->IconValue());
     if ((oper == GT_ADD) && foldedCns->IsCnsIntOrI())
     {
         cns1->AsIntCon()->gtFieldSeq =
@@ -12160,7 +12160,7 @@ DONE_MORPHING_CHILDREN:
 
             /* Check for "(expr +/- icon1) ==/!= (non-zero-icon2)" */
 
-            if (cns2->gtOper == GT_CNS_INT && cns2->AsIntCon()->gtIconVal != 0)
+            if (cns2->gtOper == GT_CNS_INT && cns2->AsIntCon()->IconValue() != 0)
             {
                 op1 = tree->AsOp()->gtOp1;
 
@@ -12171,8 +12171,8 @@ DONE_MORPHING_CHILDREN:
                 {
                     /* Got it; change "x+icon1==icon2" to "x==icon2-icon1" */
 
-                    ival1 = op1->AsOp()->gtOp2->AsIntCon()->gtIconVal;
-                    ival2 = cns2->AsIntCon()->gtIconVal;
+                    ival1 = op1->AsOp()->gtOp2->AsIntCon()->IconValue();
+                    ival2 = cns2->AsIntCon()->IconValue();
 
                     if (op1->gtOper == GT_ADD)
                     {
@@ -12182,7 +12182,7 @@ DONE_MORPHING_CHILDREN:
                     {
                         ival2 += ival1;
                     }
-                    cns2->AsIntCon()->gtIconVal = ival2;
+                    cns2->AsIntCon()->SetIconValue(ival2);
 
 #ifdef TARGET_64BIT
                     // we need to properly re-sign-extend or truncate as needed.
@@ -12389,7 +12389,7 @@ DONE_MORPHING_CHILDREN:
                         goto SKIP;
                     }
 
-                    ssize_t shiftAmount = rshiftOp->AsOp()->gtOp2->AsIntCon()->gtIconVal;
+                    ssize_t shiftAmount = rshiftOp->AsOp()->gtOp2->AsIntCon()->IconValue();
 
                     if (shiftAmount < 0)
                     {
@@ -12410,13 +12410,13 @@ DONE_MORPHING_CHILDREN:
 
                         UINT32 newAndOperand = ((UINT32)1) << shiftAmount;
 
-                        andOp->AsOp()->gtOp2->AsIntCon()->gtIconVal = newAndOperand;
+                        andOp->AsOp()->gtOp2->AsIntCon()->SetIconValue(newAndOperand);
 
                         // Reverse the cond if necessary
                         if (ival2 == 1)
                         {
                             gtReverseCond(tree);
-                            cns2->AsIntCon()->gtIconVal = 0;
+                            cns2->AsIntCon()->SetIconValue(0);
                             oper                        = tree->gtOper;
                         }
                     }
@@ -12512,7 +12512,7 @@ DONE_MORPHING_CHILDREN:
             ival1 = (int)andMask->AsIntConCommon()->LngValue();
             andMask->SetOper(GT_CNS_INT);
             andMask->gtType                = TYP_INT;
-            andMask->AsIntCon()->gtIconVal = ival1;
+            andMask->AsIntCon()->SetIconValue(ival1);
 
             /* now change the type of the AND node */
 
@@ -12525,7 +12525,7 @@ DONE_MORPHING_CHILDREN:
             cns2->gtType = TYP_INT;
 
             noway_assert(cns2 == op2);
-            cns2->AsIntCon()->gtIconVal = ival2;
+            cns2->AsIntCon()->SetIconValue(ival2);
 
             goto COMPARE;
 
@@ -12578,7 +12578,7 @@ DONE_MORPHING_CHILDREN:
                         // Keep the old ValueNumber for 'tree' as the new expr
                         // will still compute the same value as before
                         tree->SetOper(oper, GenTree::PRESERVE_VN);
-                        cns2->AsIntCon()->gtIconVal = 0;
+                        cns2->AsIntCon()->SetIconValue(0);
 
                         // vnStore is null before the ValueNumber phase has run
                         if (vnStore != nullptr)
@@ -12834,7 +12834,7 @@ DONE_MORPHING_CHILDREN:
                     {
                         cns1 = op1->AsOp()->gtOp2;
                         cns2 = op2->AsOp()->gtOp2;
-                        cns1->AsIntCon()->gtIconVal += cns2->AsIntCon()->gtIconVal;
+                        cns1->AsIntCon()->SetIconValue(cns1->AsIntCon()->IconValue() + cns2->AsIntCon()->IconValue());
 #ifdef TARGET_64BIT
                         if (cns1->TypeGet() == TYP_INT)
                         {
@@ -13298,7 +13298,7 @@ DONE_MORPHING_CHILDREN:
                         GenTree* addOp2 = op1->AsOp()->gtGetOp2();
                         if (addOp2->IsCnsIntOrI())
                         {
-                            ssize_t offset = addOp2->AsIntCon()->gtIconVal;
+                            ssize_t offset = addOp2->AsIntCon()->IconValue();
                             if ((offset % emitTypeSize(TYP_FLOAT)) != 0)
                             {
                                 tree->gtFlags |= GTF_IND_UNALIGNED;
@@ -13328,7 +13328,7 @@ DONE_MORPHING_CHILDREN:
                             break;
                         }
 
-                        ival1    = op1->AsOp()->gtOp2->AsIntCon()->gtIconVal;
+                        ival1    = op1->AsOp()->gtOp2->AsIntCon()->IconValue();
                         fieldSeq = op1->AsOp()->gtOp2->AsIntCon()->gtFieldSeq;
 
                         // Does the address have an associated zero-offset field sequence?
@@ -13894,7 +13894,7 @@ DONE_MORPHING_CHILDREN:
                     GenTree* commaOp2 = op2->AsOp()->gtOp2;
 
                     commaOp2->ChangeOperConst(GT_CNS_INT);
-                    commaOp2->AsIntCon()->gtIconVal = 0;
+                    commaOp2->AsIntCon()->SetIconValue(0);
                     /* Change the types of oper and commaOp2 to TYP_INT */
                     op2->gtType = commaOp2->gtType = TYP_INT;
                 }
@@ -13906,7 +13906,7 @@ DONE_MORPHING_CHILDREN:
                     GenTree* commaOp2 = op2->AsOp()->gtOp2;
 
                     commaOp2->ChangeOperConst(GT_CNS_INT);
-                    commaOp2->AsIntCon()->gtIconVal = 0;
+                    commaOp2->AsIntCon()->SetIconValue(0);
                     /* Change the types of oper and commaOp2 to TYP_BYREF */
                     op2->gtType = commaOp2->gtType = TYP_BYREF;
                 }
@@ -14183,19 +14183,19 @@ GenTree* Compiler::fgMorphSmpOpOptional(GenTreeOp* tree)
                         break;
                     }
 
-                    ssize_t imul = op2->AsIntCon()->gtIconVal;
-                    ssize_t iadd = add->AsIntCon()->gtIconVal;
+                    ssize_t imul = op2->AsIntCon()->IconValue();
+                    ssize_t iadd = add->AsIntCon()->IconValue();
 
                     /* Change '(val + iadd) * imul' -> '(val * imul) + (iadd * imul)' */
 
                     oper = GT_ADD;
                     tree->ChangeOper(oper);
 
-                    op2->AsIntCon()->gtIconVal = iadd * imul;
+                    op2->AsIntCon()->SetIconValue(iadd * imul);
 
                     op1->ChangeOper(GT_MUL);
 
-                    add->AsIntCon()->gtIconVal = imul;
+                    add->AsIntCon()->SetIconValue(imul);
 #ifdef TARGET_64BIT
                     if (add->gtType == TYP_INT)
                     {
@@ -14502,7 +14502,7 @@ GenTree* Compiler::fgRecognizeAndMorphBitwiseRotation(GenTree* tree)
         {
             if (leftShiftIndex->gtGetOp2()->IsCnsIntOrI())
             {
-                leftShiftMask  = leftShiftIndex->gtGetOp2()->AsIntCon()->gtIconVal;
+                leftShiftMask  = leftShiftIndex->gtGetOp2()->AsIntCon()->IconValue();
                 leftShiftIndex = leftShiftIndex->gtGetOp1();
             }
             else
@@ -14515,7 +14515,7 @@ GenTree* Compiler::fgRecognizeAndMorphBitwiseRotation(GenTree* tree)
         {
             if (rightShiftIndex->gtGetOp2()->IsCnsIntOrI())
             {
-                rightShiftMask  = rightShiftIndex->gtGetOp2()->AsIntCon()->gtIconVal;
+                rightShiftMask  = rightShiftIndex->gtGetOp2()->AsIntCon()->IconValue();
                 rightShiftIndex = rightShiftIndex->gtGetOp1();
             }
             else
@@ -14555,7 +14555,7 @@ GenTree* Compiler::fgRecognizeAndMorphBitwiseRotation(GenTree* tree)
         {
             if (shiftIndexWithAdd->gtGetOp2()->IsCnsIntOrI())
             {
-                if (shiftIndexWithAdd->gtGetOp2()->AsIntCon()->gtIconVal == rotatedValueBitSize)
+                if (shiftIndexWithAdd->gtGetOp2()->AsIntCon()->IconValue() == rotatedValueBitSize)
                 {
                     if (shiftIndexWithAdd->gtGetOp1()->OperGet() == GT_NEG)
                     {
@@ -14588,7 +14588,7 @@ GenTree* Compiler::fgRecognizeAndMorphBitwiseRotation(GenTree* tree)
         }
         else if ((leftShiftIndex->IsCnsIntOrI() && rightShiftIndex->IsCnsIntOrI()))
         {
-            if (leftShiftIndex->AsIntCon()->gtIconVal + rightShiftIndex->AsIntCon()->gtIconVal == rotatedValueBitSize)
+            if (leftShiftIndex->AsIntCon()->IconValue() + rightShiftIndex->AsIntCon()->IconValue() == rotatedValueBitSize)
             {
                 // We found this pattern:
                 // (x << c1) | (x >>> c2)
@@ -15348,7 +15348,7 @@ bool Compiler::fgFoldConditional(BasicBlock* block)
             BasicBlock* bTaken;
             BasicBlock* bNotTaken;
 
-            if (cond->AsIntCon()->gtIconVal != 0)
+            if (cond->AsIntCon()->IconValue() != 0)
             {
                 /* JTRUE 1 - transform the basic block into a BBJ_ALWAYS */
                 block->bbJumpKind = BBJ_ALWAYS;
@@ -15488,7 +15488,7 @@ bool Compiler::fgFoldConditional(BasicBlock* block)
 
                 if (optLoopTable[loopNum].lpBottom == block)
                 {
-                    if (cond->AsIntCon()->gtIconVal == 0)
+                    if (cond->AsIntCon()->IconValue() == 0)
                     {
                         /* This was a bogus loop (condition always false)
                          * Remove the loop from the table */
@@ -15572,7 +15572,7 @@ bool Compiler::fgFoldConditional(BasicBlock* block)
 
             /* Find the actual jump target */
             unsigned switchVal;
-            switchVal = (unsigned)cond->AsIntCon()->gtIconVal;
+            switchVal = (unsigned)cond->AsIntCon()->IconValue();
             unsigned jumpCnt;
             jumpCnt = block->bbJumpSwt->bbsCount;
             BasicBlock** jumpTab;

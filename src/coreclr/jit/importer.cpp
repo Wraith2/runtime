@@ -3189,7 +3189,7 @@ GenTree* Compiler::impImplicitIorI4Cast(GenTree* tree, var_types dstTyp)
         // Automatic upcast for a GT_CNS_INT into TYP_I_IMPL
         if ((tree->OperGet() == GT_CNS_INT) && varTypeIsI(dstTyp))
         {
-            if (!varTypeIsI(tree->gtType) || ((tree->gtType == TYP_REF) && (tree->AsIntCon()->gtIconVal == 0)))
+            if (!varTypeIsI(tree->gtType) || ((tree->gtType == TYP_REF) && (tree->AsIntCon()->IconValue() == 0)))
             {
                 tree->gtType = TYP_I_IMPL;
             }
@@ -3531,7 +3531,7 @@ GenTree* Compiler::impInitializeArrayIntrinsic(CORINFO_SIG_INFO* sig)
             return nullptr;
         }
 
-        numElements = S_SIZE_T(arrayLengthNode->AsIntCon()->gtIconVal);
+        numElements = S_SIZE_T(arrayLengthNode->AsIntCon()->IconValue());
 
         if (!info.compCompHnd->isSDArray(arrayClsHnd))
         {
@@ -7714,7 +7714,7 @@ GenTree* Compiler::impImportStaticFieldAccess(CORINFO_RESOLVED_TOKEN* pResolvedT
                 op1 = gtNewIconHandleNode(pFldAddr == nullptr ? (size_t)fldAddr : (size_t)pFldAddr, GTF_ICON_STATIC_HDL,
                                           fldSeq);
 #ifdef DEBUG
-                op1->AsIntCon()->gtTargetHandle = op1->AsIntCon()->gtIconVal;
+                op1->AsIntCon()->gtTargetHandle = op1->AsIntCon()->IconValue();
 #endif
 
                 if (pFieldInfo->fieldFlags & CORINFO_FLG_FIELD_INITCLASS)
@@ -12997,7 +12997,7 @@ void Compiler::impImportBlockCode(BasicBlock* block)
                        unreachable under compDbgCode */
                     assert(!opts.compDbgCode);
 
-                    BBjumpKinds foldedJumpKind = (BBjumpKinds)(op1->AsIntCon()->gtIconVal ? BBJ_ALWAYS : BBJ_NONE);
+                    BBjumpKinds foldedJumpKind = (BBjumpKinds)(op1->AsIntCon()->IconValue() != 0 ? BBJ_ALWAYS : BBJ_NONE);
                     assertImp((block->bbJumpKind == BBJ_COND)            // normal case
                               || (block->bbJumpKind == foldedJumpKind)); // this can happen if we are reimporting the
                                                                          // block for the second time
@@ -13006,7 +13006,7 @@ void Compiler::impImportBlockCode(BasicBlock* block)
 #ifdef DEBUG
                     if (verbose)
                     {
-                        if (op1->AsIntCon()->gtIconVal)
+                        if (op1->AsIntCon()->IconValue() != 0)
                         {
                             printf("\nThe conditional jump becomes an unconditional jump to " FMT_BB "\n",
                                    block->bbJumpDest->bbNum);
@@ -13473,7 +13473,7 @@ void Compiler::impImportBlockCode(BasicBlock* block)
 
                     if (op2->gtOper == GT_CNS_INT)
                     {
-                        ssize_t ival = op2->AsIntCon()->gtIconVal;
+                        ssize_t ival = op2->AsIntCon()->IconValue();
                         ssize_t mask, umask;
 
                         switch (lclTyp)
@@ -19419,7 +19419,7 @@ void Compiler::impInlineRecordArgInfo(InlineInfo*   pInlineInfo,
     if (curArgVal->IsInvariant())
     {
         inlCurArgInfo->argIsInvariant = true;
-        if (inlCurArgInfo->argIsThis && (curArgVal->gtOper == GT_CNS_INT) && (curArgVal->AsIntCon()->gtIconVal == 0))
+        if (inlCurArgInfo->argIsThis && (curArgVal->gtOper == GT_CNS_INT) && (curArgVal->AsIntCon()->IconValue() == 0))
         {
             // Abort inlining at this call site
             inlineResult->NoteFatal(InlineObservation::CALLSITE_ARG_HAS_NULL_THIS);
@@ -21975,7 +21975,7 @@ bool Compiler::impCanSkipCovariantStoreCheck(GenTree* value, GenTree* array)
     if (value->OperIs(GT_CNS_INT))
     {
         assert(value->gtType == TYP_REF);
-        if (value->AsIntCon()->gtIconVal == 0)
+        if (value->AsIntCon()->IconValue() == 0)
         {
             JITDUMP("\nstelem of null: skipping covariant store check\n");
             return true;

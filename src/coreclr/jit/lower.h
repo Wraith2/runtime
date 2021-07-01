@@ -401,7 +401,7 @@ private:
             {
                 if (arg->IsCnsIntOrI())
                 {
-                    vecCns.i8[argIdx] = static_cast<int8_t>(arg->AsIntCon()->gtIconVal);
+                    vecCns.i8[argIdx] = static_cast<int8_t>(arg->AsIntCon()->IconValue());
                     return true;
                 }
                 else
@@ -417,7 +417,7 @@ private:
             {
                 if (arg->IsCnsIntOrI())
                 {
-                    vecCns.i16[argIdx] = static_cast<int16_t>(arg->AsIntCon()->gtIconVal);
+                    vecCns.i16[argIdx] = static_cast<int16_t>(arg->AsIntCon()->IconValue());
                     return true;
                 }
                 else
@@ -433,7 +433,7 @@ private:
             {
                 if (arg->IsCnsIntOrI())
                 {
-                    vecCns.i32[argIdx] = static_cast<int32_t>(arg->AsIntCon()->gtIconVal);
+                    vecCns.i32[argIdx] = static_cast<int32_t>(arg->AsIntCon()->IconValue());
                     return true;
                 }
                 else
@@ -450,7 +450,7 @@ private:
 #if defined(TARGET_64BIT)
                 if (arg->IsCnsIntOrI())
                 {
-                    vecCns.i64[argIdx] = static_cast<int64_t>(arg->AsIntCon()->gtIconVal);
+                    vecCns.i64[argIdx] = static_cast<int64_t>(arg->AsIntCon()->IconValue());
                     return true;
                 }
 #else
@@ -459,9 +459,9 @@ private:
                     // 32-bit targets will decompose GT_CNS_LNG into two GT_CNS_INT
                     // We need to reconstruct the 64-bit value in order to handle this
 
-                    INT64 gtLconVal = arg->AsOp()->gtOp2->AsIntCon()->gtIconVal;
+                    INT64 gtLconVal = arg->AsOp()->gtOp2->AsIntCon()->IconValue();
                     gtLconVal <<= 32;
-                    gtLconVal |= arg->AsOp()->gtOp1->AsIntCon()->gtIconVal;
+                    gtLconVal |= arg->AsOp()->gtOp1->AsIntCon()->IconValue();
 
                     vecCns.i64[argIdx] = gtLconVal;
                     return true;

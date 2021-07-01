@@ -1316,7 +1316,7 @@ AGAIN:
         switch (oper)
         {
             case GT_CNS_INT:
-                if (op1->AsIntCon()->gtIconVal == op2->AsIntCon()->gtIconVal)
+                if (op1->AsIntCon()->IconValue() == op2->AsIntCon()->IconValue())
                 {
                     return true;
                 }
@@ -2018,7 +2018,7 @@ AGAIN:
                 break;
 
             case GT_CNS_INT:
-                add = tree->AsIntCon()->gtIconVal;
+                add = tree->AsIntCon()->IconValue();
                 break;
             case GT_CNS_LNG:
                 bits = (UINT64)tree->AsLngCon()->gtLconVal;
@@ -4923,13 +4923,13 @@ bool GenTree::IsAddWithI32Const(GenTree** addr, int* offset)
     {
         if (AsOp()->gtOp1->IsIntCnsFitsInI32())
         {
-            *offset = (int)AsOp()->gtOp1->AsIntCon()->gtIconVal;
+            *offset = (int)AsOp()->gtOp1->AsIntCon()->IconValue();
             *addr   = AsOp()->gtOp2;
             return true;
         }
         else if (AsOp()->gtOp2->IsIntCnsFitsInI32())
         {
-            *offset = (int)AsOp()->gtOp2->AsIntCon()->gtIconVal;
+            *offset = (int)AsOp()->gtOp2->AsIntCon()->IconValue();
             *addr   = AsOp()->gtOp1;
             return true;
         }
@@ -6997,7 +6997,7 @@ void GenTreeIntCon::FixupInitBlkValue(var_types asgType)
     unsigned size = genTypeSize(asgType);
     if (size > 1)
     {
-        size_t cns = gtIconVal;
+        size_t cns = IconValue();
         cns        = cns & 0xFF;
         cns |= cns << 8;
         if (size >= 4)
@@ -7017,7 +7017,7 @@ void GenTreeIntCon::FixupInitBlkValue(var_types asgType)
             assert(!varTypeIsGC(asgType) || (cns == 0));
         }
 
-        gtIconVal = cns;
+        SetIconValue(cns);
     }
 }
 
@@ -7502,7 +7502,7 @@ GenTree* Compiler::gtClone(GenTree* tree, bool complexOK)
 #if defined(LATE_DISASM)
             if (tree->IsIconHandle())
             {
-                copy = gtNewIconHandleNode(tree->AsIntCon()->gtIconVal, tree->gtFlags, tree->AsIntCon()->gtFieldSeq);
+                copy = gtNewIconHandleNode(tree->AsIntCon()->IconValue(), tree->gtFlags, tree->AsIntCon()->gtFieldSeq);
                 copy->AsIntCon()->gtCompileTimeHandle = tree->AsIntCon()->gtCompileTimeHandle;
                 copy->gtType                          = tree->gtType;
             }
@@ -7510,7 +7510,7 @@ GenTree* Compiler::gtClone(GenTree* tree, bool complexOK)
 #endif
             {
                 copy = new (this, GT_CNS_INT)
-                    GenTreeIntCon(tree->gtType, tree->AsIntCon()->gtIconVal, tree->AsIntCon()->gtFieldSeq);
+                    GenTreeIntCon(tree->gtType, tree->AsIntCon()->IconValue(), tree->AsIntCon()->gtFieldSeq);
                 copy->AsIntCon()->gtCompileTimeHandle = tree->AsIntCon()->gtCompileTimeHandle;
             }
             break;
@@ -7669,14 +7669,14 @@ GenTree* Compiler::gtCloneExpr(
                 if (tree->IsIconHandle())
                 {
                     copy =
-                        gtNewIconHandleNode(tree->AsIntCon()->gtIconVal, tree->gtFlags, tree->AsIntCon()->gtFieldSeq);
+                        gtNewIconHandleNode(tree->AsIntCon()->IconValue(), tree->gtFlags, tree->AsIntCon()->gtFieldSeq);
                     copy->AsIntCon()->gtCompileTimeHandle = tree->AsIntCon()->gtCompileTimeHandle;
                     copy->gtType                          = tree->gtType;
                 }
                 else
 #endif
                 {
-                    copy = gtNewIconNode(tree->AsIntCon()->gtIconVal, tree->gtType);
+                    copy = gtNewIconNode(tree->AsIntCon()->IconValue(), tree->gtType);
 #ifdef DEBUG
                     copy->AsIntCon()->gtTargetHandle = tree->AsIntCon()->gtTargetHandle;
 #endif
@@ -8686,7 +8686,8 @@ bool Compiler::gtCompareTree(GenTree* op1, GenTree* op2)
         switch (oper)
         {
             case GT_CNS_INT:
-                if ((op1->AsIntCon()->gtIconVal == op2->AsIntCon()->gtIconVal) && GenTree::SameIconHandleFlag(op1, op2))
+                if ((op1->AsIntCon()->IconValue() == op2->AsIntCon()->IconValue()) &&
+                    GenTree::SameIconHandleFlag(op1, op2))
                 {
                     return true;
                 }
@@ -11131,35 +11132,35 @@ void Compiler::gtDispConst(GenTree* tree)
         case GT_CNS_INT:
             if (tree->IsIconHandle(GTF_ICON_STR_HDL))
             {
-                const WCHAR* str = eeGetCPString(tree->AsIntCon()->gtIconVal);
+                const WCHAR* str = eeGetCPString(tree->AsIntCon()->IconValue());
                 // If *str points to a '\0' then don't print the string's values
                 if ((str != nullptr) && (*str != '\0'))
                 {
-                    printf(" 0x%X \"%S\"", dspPtr(tree->AsIntCon()->gtIconVal), str);
+                    printf(" 0x%X \"%S\"", dspPtr(tree->AsIntCon()->IconValue()), str);
                 }
                 else // We can't print the value of the string
                 {
                     // Note that eeGetCPString isn't currently implemented on Linux/ARM
                     // and instead always returns nullptr
-                    printf(" 0x%X [ICON_STR_HDL]", dspPtr(tree->AsIntCon()->gtIconVal));
+                    printf(" 0x%X [ICON_STR_HDL]", dspPtr(tree->AsIntCon()->IconValue()));
                 }
             }
             else
             {
                 ssize_t dspIconVal =
-                    tree->IsIconHandle() ? dspPtr(tree->AsIntCon()->gtIconVal) : tree->AsIntCon()->gtIconVal;
+                    tree->IsIconHandle() ? dspPtr(tree->AsIntCon()->IconValue()) : tree->AsIntCon()->IconValue();
 
                 if (tree->TypeGet() == TYP_REF)
                 {
-                    assert(tree->AsIntCon()->gtIconVal == 0);
+                    assert(tree->AsIntCon()->IconValue() == 0);
                     printf(" null");
                 }
-                else if ((tree->AsIntCon()->gtIconVal > -1000) && (tree->AsIntCon()->gtIconVal < 1000))
+                else if ((tree->AsIntCon()->IconValue() > -1000) && (tree->AsIntCon()->IconValue() < 1000))
                 {
                     printf(" %ld", dspIconVal);
                 }
 #ifdef TARGET_64BIT
-                else if ((tree->AsIntCon()->gtIconVal & 0xFFFFFFFF00000000LL) != 0)
+                else if ((tree->AsIntCon()->IconValue() & 0xFFFFFFFF00000000LL) != 0)
                 {
                     if (dspIconVal >= 0)
                     {
@@ -16246,7 +16247,7 @@ Compiler::TypeProducerKind Compiler::gtGetTypeProducerKind(GenTree* tree)
     {
         return TPK_GetType;
     }
-    else if ((tree->gtOper == GT_CNS_INT) && (tree->AsIntCon()->gtIconVal == 0))
+    else if ((tree->gtOper == GT_CNS_INT) && (tree->AsIntCon()->IconValue() == 0))
     {
         return TPK_Null;
     }
@@ -18399,9 +18400,9 @@ void GenTree::ParseArrayAddressWork(Compiler*       comp,
             case GT_CNS_INT:
                 *pFldSeq = comp->GetFieldSeqStore()->Append(*pFldSeq, AsIntCon()->gtFieldSeq);
                 assert(!AsIntCon()->ImmedValNeedsReloc(comp));
-                // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntCon::gtIconVal had target_ssize_t
+                // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntCon::IconValue() had target_ssize_t
                 // type.
-                *pOffset += (inputMul * (target_ssize_t)(AsIntCon()->gtIconVal));
+                *pOffset += (inputMul * (target_ssize_t)(AsIntCon()->IconValue()));
                 return;
 
             case GT_ADD:
@@ -18427,7 +18428,7 @@ void GenTree::ParseArrayAddressWork(Compiler*       comp,
                         AsOp()->gtOp2->AsIntCon()->gtFieldSeq == FieldSeqStore::NotAField())
                     {
                         assert(!AsOp()->gtOp2->AsIntCon()->ImmedValNeedsReloc(comp));
-                        // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntConCommon::gtIconVal had
+                        // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntConCommon::IconValue() had
                         // target_ssize_t type.
                         subMul   = (target_ssize_t)AsOp()->gtOp2->AsIntConCommon()->IconValue();
                         nonConst = AsOp()->gtOp1;
@@ -18435,7 +18436,7 @@ void GenTree::ParseArrayAddressWork(Compiler*       comp,
                     else
                     {
                         assert(!AsOp()->gtOp1->AsIntCon()->ImmedValNeedsReloc(comp));
-                        // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntConCommon::gtIconVal had
+                        // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntConCommon::IconValue() had
                         // target_ssize_t type.
                         subMul   = (target_ssize_t)AsOp()->gtOp1->AsIntConCommon()->IconValue();
                         nonConst = AsOp()->gtOp2;
@@ -18444,7 +18445,7 @@ void GenTree::ParseArrayAddressWork(Compiler*       comp,
                 else if (AsOp()->gtOp2->IsCnsIntOrI())
                 {
                     assert(!AsOp()->gtOp2->AsIntCon()->ImmedValNeedsReloc(comp));
-                    // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntConCommon::gtIconVal had
+                    // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntConCommon::IconValue() had
                     // target_ssize_t type.
                     subMul   = (target_ssize_t)AsOp()->gtOp2->AsIntConCommon()->IconValue();
                     nonConst = AsOp()->gtOp1;
@@ -18463,7 +18464,7 @@ void GenTree::ParseArrayAddressWork(Compiler*       comp,
                 if (AsOp()->gtOp2->IsCnsIntOrI())
                 {
                     assert(!AsOp()->gtOp2->AsIntCon()->ImmedValNeedsReloc(comp));
-                    // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntCon::gtIconVal had target_ssize_t
+                    // TODO-CrossBitness: we wouldn't need the cast below if GenTreeIntCon::IconValue() had target_ssize_t
                     // type.
                     target_ssize_t shiftVal = (target_ssize_t)AsOp()->gtOp2->AsIntConCommon()->IconValue();
                     target_ssize_t subMul   = target_ssize_t{1} << shiftVal;

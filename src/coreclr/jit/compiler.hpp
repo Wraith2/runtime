@@ -3360,7 +3360,7 @@ inline int Compiler::LoopDsc::lpIterConst() const
 {
     VERIFY_lpIterTree();
     GenTree* rhs = lpIterTree->AsOp()->gtOp2;
-    return (int)rhs->AsOp()->gtOp2->AsIntCon()->gtIconVal;
+    return (int)rhs->AsOp()->gtOp2->AsIntCon()->IconValue();
 }
 
 //-----------------------------------------------------------------------------
@@ -3476,7 +3476,7 @@ inline int Compiler::LoopDsc::lpConstLimit() const
 
     GenTree* limit = lpLimit();
     assert(limit->OperIsConst());
-    return (int)limit->AsIntCon()->gtIconVal;
+    return (int)limit->AsIntCon()->IconValue();
 }
 
 //-----------------------------------------------------------------------------
@@ -3764,7 +3764,7 @@ inline GenTree* Compiler::impCheckForNullPointer(GenTree* obj)
         assert(obj->gtType == TYP_REF || obj->gtType == TYP_BYREF);
 
         // We can see non-zero byrefs for RVA statics or for frozen strings.
-        if (obj->AsIntCon()->gtIconVal != 0)
+        if (obj->AsIntCon()->IconValue() != 0)
         {
 #ifdef DEBUG
             if (!obj->TypeIs(TYP_BYREF))
