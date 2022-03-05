@@ -3903,6 +3903,113 @@ GenTree* Lowering::TryLowerAndOpToAndNot(GenTreeOp* andNode)
     return andnNode;
 }
 
+
+GenTree* Lowering::TryLowerBswapOpToMoveDataAfterSwappingBytes(GenTreeOp* bswapNode)
+{
+    assert(bswapNode->OperIs(GT_BSWAP, GT_BSWAP16));
+
+    GenTree* loadFromNode    = nullptr;
+    GenTree* storeToNode     = nullptr;
+    GenTree* firstNode       = nullptr;
+    GenTree* containerNode   = nullptr;
+
+    {
+        GenTree* prev = bswapNode->gtPrev;
+        if (prev != nullptr && prev->OperIs(GT_IND))
+        {
+            JITDUMP("bswap looks like a load\n");
+            containerNode     = prev;
+            firstNode         = prev;
+            loadFromNode      = prev->gtGetOp1();
+        }
+        else
+        {
+            GenTree* next = bswapNode->gtNext;
+            if (next != nullptr && next->OperIs(GT_STORE_LCL_VAR))
+            {
+                JITDUMP("bswap looks like a store\n");
+                containerNode = next;
+                storeToNode   = next->gtNext;
+                firstNode     = bswapNode;
+            }
+        }
+    }
+
+    if (storeToNode == nullptr && loadFromNode == nullptr)
+    {
+        return nullptr;
+    }
+
+    assert(storeToNode == nullptr || loadFromNode == nullptr);
+
+    GenTree* destNode   = bswapNode->gtGetOp1();
+    GenTree* sourceNode = destNode;
+    NamedIntrinsic intrinsic;
+    if (bswapNode->TypeIs(TYP_LONG) && comp->compOpportunisticallyDependsOn(InstructionSet_MOVBE_X64))
+    {
+        if (loadFromNode != nullptr)
+        {
+            sourceNode = loadFromNode;
+            intrinsic = NamedIntrinsic::NI_MOVBE_X64_LoadMoveDataAfterSwappingBytes;
+        }
+        else
+        {
+            destNode  = storeToNode;
+            intrinsic = NamedIntrinsic::NI_MOVBE_X64_StoreMoveDataAfterSwappingBytes;
+        }
+    }
+    else if (comp->compOpportunisticallyDependsOn(InstructionSet_MOVBE))
+    {
+        if (loadFromNode != nullptr)
+        {
+            sourceNode = loadFromNode;
+            intrinsic = NamedIntrinsic::NI_MOVBE_LoadMoveDataAfterSwappingBytes;
+        }
+        else
+        {
+            destNode  = storeToNode;
+            intrinsic = NamedIntrinsic::NI_MOVBE_StoreMoveDataAfterSwappingBytes;
+        }
+    }
+    else
+    {
+        return nullptr;
+    }
+
+    LIR::Use use;
+    if (!BlockRange().TryGetUse(firstNode, &use))
+    {
+        return nullptr;
+    }
+
+
+
+    GenTreeHWIntrinsic* movbeNode =
+        comp->gtNewScalarHWIntrinsicNode(destNode->TypeGet(), destNode, sourceNode, intrinsic);
+
+    JITDUMP("Lower: optimize BSWAP to MOVBE\n");
+
+    use.ReplaceWith(movbeNode);
+
+    BlockRange().InsertBefore(firstNode, movbeNode);
+    BlockRange().Remove(bswapNode);
+    BlockRange().Remove(containerNode);
+    if (loadFromNode != nullptr)
+    {
+        BlockRange().Remove(loadFromNode);
+    }
+    else
+    {
+        BlockRange().Remove(storeToNode);
+    }
+
+    ContainCheckHWIntrinsic(movbeNode);
+
+    return movbeNode;
+
+    //return nullptr;
+}
+
 #endif // FEATURE_HW_INTRINSICS
 
 //----------------------------------------------------------------------------------------------

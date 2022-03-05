@@ -726,6 +726,10 @@ bool emitter::TakesRexWPrefix(instruction ins, emitAttr attr)
     {
         return false;
     }
+    else if (ins == INS_movbe)
+    {
+        return true;
+    }
 
     if (IsSSEOrAVXInstruction(ins))
     {
@@ -12252,24 +12256,34 @@ BYTE* emitter::emitOutputRR(BYTE* dst, instrDesc* id)
 #endif // TARGET_AMD64
     }
 #ifdef FEATURE_HW_INTRINSICS
-    else if ((ins == INS_bsf) || (ins == INS_bsr) || (ins == INS_crc32) || (ins == INS_lzcnt) || (ins == INS_popcnt) ||
-             (ins == INS_tzcnt))
+    else if (ins == INS_crc32)
     {
         assert(hasCodeRM(ins) && !hasCodeMI(ins) && !hasCodeMR(ins));
         code = insCodeRM(ins);
         code = AddVexPrefixIfNeeded(ins, code, size);
         code = insEncodeRMreg(ins, code);
-        if ((ins == INS_crc32) && (size > EA_1BYTE))
+        if (size > EA_1BYTE)
         {
             code |= 0x0100;
         }
-
         if (size == EA_2BYTE)
         {
-            assert(ins == INS_crc32);
             dst += emitOutputByte(dst, 0x66);
         }
         else if (size == EA_8BYTE)
+        {
+            code = AddRexWPrefix(ins, code);
+        }
+    }
+    else if ((ins == INS_bsf) || (ins == INS_bsr) || (ins == INS_lzcnt) || (ins == INS_popcnt) ||
+             (ins == INS_tzcnt) || (ins == INS_movbe))
+    {
+        assert(hasCodeRM(ins) && !hasCodeMI(ins) && !hasCodeMR(ins));
+        code = insCodeRM(ins);
+        code = AddVexPrefixIfNeeded(ins, code, size);
+        code = insEncodeRMreg(ins, code);
+
+        if (size == EA_8BYTE)
         {
             code = AddRexWPrefix(ins, code);
         }

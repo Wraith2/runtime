@@ -1311,6 +1311,8 @@ void EEJitManager::SetCpuInfo()
     //      BMI2 - EBX bit 8
     //   CORJIT_FLAG_USE_LZCNT if the following feature bits are set (input EAX of 80000001H)
     //      LZCNT - ECX bit 5
+    //   CORJIT_FLAG_USE_MOVBE if the following feature bits are set (input EAX of 80000001H)
+    //      MOVBE - ECX bit 22
     // synchronously updating VM and JIT.
 
     int cpuidInfo[4];
@@ -1357,6 +1359,11 @@ void EEJitManager::SetCpuInfo()
                         if ((cpuidInfo[ECX] & (1 << 20)) != 0)                                              // SSE4.2
                         {
                             CPUCompileFlags.Set(InstructionSet_SSE42);
+
+                            if ((cpuidInfo[ECX] & (1 << 22)) != 0)                                          // MOVBE
+                            {
+                                CPUCompileFlags.Set(InstructionSet_MOVBE);
+                            }
 
                             if ((cpuidInfo[ECX] & (1 << 23)) != 0)                                          // POPCNT
                             {
@@ -1540,6 +1547,11 @@ void EEJitManager::SetCpuInfo()
     if (!CLRConfig::GetConfigValue(CLRConfig::EXTERNAL_EnableLZCNT))
     {
         CPUCompileFlags.Clear(InstructionSet_LZCNT);
+    }
+
+    if (!CLRConfig::GetConfigValue(CLRConfig::EXTERNAL_EnableMOVBE))
+    {
+        CPUCompileFlags.Clear(InstructionSet_MOVBE);
     }
 
     if (!CLRConfig::GetConfigValue(CLRConfig::EXTERNAL_EnablePCLMULQDQ))

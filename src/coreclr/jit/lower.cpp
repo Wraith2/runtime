@@ -418,6 +418,22 @@ GenTree* Lowering::LowerNode(GenTree* node)
         }
         break;
 
+#if defined(TARGET_XARCH)
+#ifdef FEATURE_HW_INTRINSICS
+        case GT_BSWAP16:
+        case GT_BSWAP:
+        {
+            GenTree* replacementNode = TryLowerBswapOpToMoveDataAfterSwappingBytes(node->AsOp());
+            if (replacementNode != nullptr)
+            {
+                return replacementNode->gtNext;
+            }
+            
+        }
+        break;
+#endif
+#endif 
+
         default:
             break;
     }

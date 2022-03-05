@@ -1,29 +1,16 @@
 ; Define the set of instruction sets available on a platform
-; Format is
-;
-; Add new instruction set
-; instructionset,<architecture>,<managed name>,<r2r name if different>,<R2R numeric value>, <jit instruction set name>, <public name>
-;
-; The public name is intended to match with mono for specifying what the name of the instruction set is. These names match names produced by other compilers as well.
-;
-; Add jit 64bit architecture specific instruction set when instruction set is available
-; instructionset64bit,<architecture>,<jit instruction set name>
-;
-; Note that a instruction set is a "Vector" instruction set. A vector instruction set may only imply a single other instruction set
-; vectorinstructionset,<architecture>,<jit instruction set name>
-;
-; Add an instruction set implication (i.e, if instruction set A is present, then instruction set B must be present too.)
-; implication,<architecture>,<jit instruction set name>,<implied jit instruction set name>
-;
-; Copy instruction sets defined for other architecture at this point in the file.
-; copyinstructionsets,<architecture>,<copytoarchitecture>
-
-; UPDATE JIT/EE INTERFACE GUID WHEN CHANGING THESE DEFINITIONS. The instruction set definitions are part of JIT/EE interface contract.
-
-; DO NOT CHANGE R2R NUMERIC VALUES OF THE EXISTING SETS. Changing R2R numberic values definitions would be R2R format breaking change.
+; NOTE:
+; - UPDATE JIT/EE INTERFACE GUID WHEN CHANGING THESE DEFINITIONS. The instruction set definitions are part of JIT/EE interface contract.
+; - DO NOT CHANGE R2R NUMERIC VALUES OF THE EXISTING SETS. Changing R2R numberic values definitions would be R2R format breaking change.
+; - The instructionset public name is intended to match with mono for specifying what the name of the instruction set is. These names match names produced by other compilers as well.
+; - Use /src/coreclr/tools/Common/JitInterface/ThunkGenerator/gen.[bat|sh] to regenerate files from the information in this file
+; - if an isa is added you must update clrconfigvalues.h with a configuration entry allowing it to be disabled
 
 ; Definition of X86 instruction sets
 definearch         ,X86   ,32Bit     ,X64
+
+; Add new instruction set
+; instructionset,<architecture>,<managed name>,<r2r name if different>,<R2R numeric value>, <jit instruction set name>, <public name>
 
 instructionset     ,X86   ,X86Base   ,        ,22 ,X86Base  ,base
 instructionset     ,X86   ,Sse       ,        ,1  ,SSE      ,sse
@@ -44,6 +31,10 @@ instructionset     ,X86   ,Popcnt    ,        ,15 ,POPCNT   ,popcnt
 instructionset     ,X86   ,          ,        ,   ,Vector128,
 instructionset     ,X86   ,          ,        ,   ,Vector256,
 instructionset     ,X86   ,AvxVnni   ,        ,25 ,AVXVNNI  ,avxvnni
+instructionset     ,X86   ,Movbe     ,        ,26 ,MOVBE    ,movbe
+
+; Add jit 64bit architecture specific instruction set when instruction set is available
+; instructionset64bit,<architecture>,<jit instruction set name>
 
 instructionset64bit,X86   ,X86Base
 instructionset64bit,X86   ,SSE
@@ -62,9 +53,16 @@ instructionset64bit,X86   ,LZCNT
 instructionset64bit,X86   ,PCLMULQDQ
 instructionset64bit,X86   ,POPCNT
 instructionset64bit,X86   ,AVXVNNI
+instructionset64bit,X86   ,MOVBE
+
+; Add new ""Vector"" instriction set. A vector instruction set may only imply a single other instruction set
+; vectorinstructionset,<architecture>,<jit instruction set name>
 
 vectorinstructionset,X86  ,Vector128
 vectorinstructionset,X86  ,Vector256
+
+; Add an instruction set implication (i.e, if instruction set A is present, then instruction set B must be present too.)
+; implication,<architecture>,<jit instruction set name>,<implied jit instruction set name>
 
 implication        ,X86   ,SSE       ,X86Base
 implication        ,X86   ,SSE2      ,SSE
@@ -79,6 +77,7 @@ implication        ,X86   ,BMI1      ,AVX
 implication        ,X86   ,BMI2      ,AVX
 implication        ,X86   ,FMA       ,AVX
 implication        ,X86   ,LZCNT     ,X86Base
+implication        ,X86   ,MOVBE     ,X86Base
 implication        ,X86   ,PCLMULQDQ ,SSE2
 implication        ,X86   ,POPCNT    ,SSE42
 implication        ,X86   ,Vector128 ,SSE
@@ -88,10 +87,16 @@ implication        ,X86   ,AVXVNNI   ,AVX2
 ; Definition of X64 instruction sets
 definearch         ,X64   ,64Bit     ,X64
 
+; Copy instruction sets defined for other architecture at this point in the file.
+; copyinstructionsets,<architecture>,<copytoarchitecture>
+
 copyinstructionsets,X86   ,X64
 
 ; Definition of Arm64 instruction sets
 definearch         ,ARM64 ,64Bit     ,Arm64
+
+; Add new instruction set
+; instructionset,<architecture>,<managed name>,<r2r name if different>,<R2R numeric value>, <jit instruction set name>, <public name>
 
 instructionset     ,ARM64 ,ArmBase   ,        ,16 ,ArmBase  ,base
 instructionset     ,ARM64 ,AdvSimd   ,        ,17 ,AdvSimd  ,neon
@@ -106,6 +111,9 @@ instructionset     ,ARM64 ,          ,        ,   ,Vector64 ,
 instructionset     ,ARM64 ,          ,        ,   ,Vector128,
 instructionset     ,ARM64 ,          ,        ,   ,Dczva    ,
 
+; Add jit 64bit architecture specific instruction set when instruction set is available
+; instructionset64bit,<architecture>,<jit instruction set name>
+
 instructionset64bit,ARM64 ,ArmBase
 instructionset64bit,ARM64 ,AdvSimd
 instructionset64bit,ARM64 ,Aes
@@ -115,8 +123,14 @@ instructionset64bit,ARM64 ,Rdm
 instructionset64bit,ARM64 ,Sha1
 instructionset64bit,ARM64 ,Sha256
 
+; Add new ""Vector"" instriction set. A vector instruction set may only imply a single other instruction set
+; vectorinstructionset,<architecture>,<jit instruction set name>
+
 vectorinstructionset,ARM64,Vector64
 vectorinstructionset,ARM64,Vector128
+
+; Add an instruction set implication (i.e, if instruction set A is present, then instruction set B must be present too.)
+; implication,<architecture>,<jit instruction set name>,<implied jit instruction set name>
 
 implication        ,ARM64 ,AdvSimd   ,ArmBase
 implication        ,ARM64 ,Aes       ,ArmBase

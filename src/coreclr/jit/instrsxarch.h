@@ -167,6 +167,7 @@ INSTMUL(imul_15,        "imul",             IUM_RD, BAD_CODE,     0x4400003868, 
 #define SSEDBL(c) PACK3(0xf2, 0x0f, c)
 #define PCKDBL(c) PACK3(0x66, 0x0f, c)
 #define PCKFLT(c) PACK2(0x0f,c)
+#define PCKMVB(c) PACK3(0x0F, 0x38, c)
 
 // These macros encode extra byte that is implicit in the macro.
 #define PACK4(byte1,byte2,byte3,byte4) (((byte1) << 16) | ((byte2) << 24) | (byte3) | ((byte4) << 8))
@@ -609,6 +610,7 @@ INST3(LAST_BMI_INSTRUCTION, "LAST_BMI_INSTRUCTION", IUM_WR, BAD_CODE, BAD_CODE, 
 
 INST3(LAST_AVX_INSTRUCTION, "LAST_AVX_INSTRUCTION", IUM_WR, BAD_CODE, BAD_CODE, BAD_CODE, INS_FLAGS_None)
 
+//    id                nm                  um      mr            mi            rm                                       flags
 // Scalar instructions in SSE4.2
 INST3(crc32,            "crc32",            IUM_WR, BAD_CODE,     BAD_CODE,     PACK4(0xF2, 0x0F, 0x38, 0xF0),           INS_FLAGS_None)
 
@@ -620,6 +622,9 @@ INST3(lzcnt,            "lzcnt",            IUM_WR, BAD_CODE,     BAD_CODE,     
 
 // POPCNT
 INST3(popcnt,           "popcnt",           IUM_WR, BAD_CODE,     BAD_CODE,     SSEFLT(0xB8),                            Resets_OF      | Resets_SF     | Writes_ZF     | Resets_AF     | Resets_PF     | Resets_CF )
+
+// MOVBE
+INST3(movbe,            "movbe",            IUM_WR, PCKMVB(0xF1), BAD_CODE,     PCKMVB(0xF0),                            INS_FLAGS_None) // Move Data After Swapping Bytes
 
 //    id                nm                  um      mr            mi                                                     flags
 INST2(ret,              "ret",              IUM_RD, 0x0000C3,     0x0000C2,                                              INS_FLAGS_None )

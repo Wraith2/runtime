@@ -349,6 +349,7 @@ private:
     void LowerHWIntrinsicWithElement(GenTreeHWIntrinsic* node);
     GenTree* TryLowerAndOpToResetLowestSetBit(GenTreeOp* andNode);
     GenTree* TryLowerAndOpToAndNot(GenTreeOp* andNode);
+    GenTree* TryLowerBswapOpToMoveDataAfterSwappingBytes(GenTreeOp* bswapNode);
 #elif defined(TARGET_ARM64)
     bool IsValidConstForMovImm(GenTreeHWIntrinsic* node);
     void LowerHWIntrinsicFusedMultiplyAddScalar(GenTreeHWIntrinsic* node);
